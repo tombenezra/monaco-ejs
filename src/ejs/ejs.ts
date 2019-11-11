@@ -61,7 +61,7 @@ export const language = <monaco.languages.IMonarchLanguage>{
 	tokenPostfix: '.ejs',
 	ignoreCase: true,
 	ejsKeywords: [
-		'if', 'includes', 'true', 'false'
+		'if', 'else', 'includes', 'true', 'false'
 	],
 	// The main tokenizer for our languages
 	tokenizer: {
