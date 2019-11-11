@@ -2,13 +2,15 @@ import React from "react";
 import * as monaco from "monaco-editor-core";
 import './ejs/ejs.contribution'
 
-const ejsSample = `<div class="section-hero layout-<%= layout.layoutStyle %> <%= layout.height %>">
+const ejsSample = `
+<%= elementsAndContent.title %>
+<div class="section-hero layout-<%= layout.layoutStyle %> <%= layout.height %>">
 <div class="title-block">
-  <#/* this is ejs comment */#>
+  <%# comment %>
   <h1><%= elementsAndContent.title %></h1>
   <h2><%= elementsAndContent.subtitle %></h2>
 </div>
-<% if(elementsAndContent.showSearchBar) { %>
+<% if(true) { %>
   <div>
     <Search />
   </div>
