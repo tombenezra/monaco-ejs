@@ -4,10 +4,12 @@ import { createAST } from "./createAST.ts";
 import "./ejs/ejs.contribution";
 
 const ejsSample = `
-<%= model.title %>
+<%= console.log %>
 <div class="section-hero layout-<%= layout.layoutStyle %> <%= layout.height %>">
 <div class="title-block">
-  <%# comment %>
+<%# comment %>
+<# second comment %>
+<## yet another comment %>
   <h1><%= model.title %></h1>
   <h2><%= model.subtitle %></h2>
 </div>

@@ -6,6 +6,8 @@ const PREFIX_SYMBOLS = ['=', ...POSTFIX_SYMBOLS]
 const brackets = PREFIX_SYMBOLS.flatMap(x => POSTFIX_SYMBOLS.map(y => <monaco.languages.CharacterPair>[`<%${x}`, `${y}%>`]))
 
 export const conf: monaco.languages.LanguageConfiguration = {
+	wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
+
 	comments: {
 		blockComment: ['<!--', '-->']
 	},
@@ -23,8 +25,7 @@ export const conf: monaco.languages.LanguageConfiguration = {
 		{ open: '[', close: ']' },
 		{ open: '(', close: ')' },
 		{ open: '"', close: '"' },
-		{ open: '\'', close: '\'' },
-		{ open: '<%', close: '%>' }
+		{ open: '\'', close: '\'' }
 	],
 
 	surroundingPairs: [
@@ -60,15 +61,11 @@ export const language = <monaco.languages.IMonarchLanguage>{
 	defaultToken: '',
 	tokenPostfix: '.ejs',
 	ignoreCase: true,
-	ejsKeywords: [
-		'if', 'else', 'includes', 'true', 'false'
-	],
+
 	// The main tokenizer for our languages
 	tokenizer: {
 		root: [
-			// [/<([%?])/, 'string', '@ejs'],
-			[/<([%?][_=-]?)/, 'string', '@ejs'],
-			// [/<([%#?])/, 'comment', '@ejsComment'],
+			{ include: 'ejsEmbeddedBegin' },
 			[/<!DOCTYPE/, 'metatag', '@doctype'],
 			[/<!--/, 'comment', '@comment'],
 			[/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ['delimiter', 'tag', '', 'delimiter']],
@@ -79,33 +76,19 @@ export const language = <monaco.languages.IMonarchLanguage>{
 			[/</, 'delimiter'],
 			[/[^<]+/], // text
 		],
-		
-		// ejsComment: [
-		// 	[/(%?)>/, 'comment', '@pop'],
-		// 	[/./, 'comment.content']
-		// ],
 
-		// ejs: [
-		// 	[/[a-zA-Z_]\w*/, {
-        //         cases: {
-		// 			'@ejsKeywords': { token: 'keyword.ejs' }
-		// 		}
-		// 	}],
-		// 	[/([_-]?[%?])>/, 'string', '@pop'],
-		// ],
-		
-		ejs: [
-			[/[a-zA-Z_]\w*/, {
-                cases: {
-					'@ejsKeywords': { token: 'keyword.ejs' }
-				}
-			}],
-			[/([_-]?[%?])>/, 'string', '@pop'],
+		ejsEmbeddedBegin: [
+			[/<(%?[#])/, 'comment', '@ejsComments'],
+			[/<([%?][_=-]?)/, { token: 'metatag', next: '@ejsEmbeddedEnd', nextEmbedded: 'text/javascript' }]
+		],
 
-			//brackets
-			[/[{}]/, 'delimiter.bracket'],
-            [/[\[\]]/, 'delimiter.array'],
-            [/[()]/, 'delimiter.parenthesis']
+		ejsEmbeddedEnd: [
+			[/([_-]?[%?])>/, { token: 'metatag', next: '@pop', nextEmbedded: '@pop' }],
+		],
+
+		ejsComments: [
+			[/(%?)>/, 'comment', '@pop'],
+			[/./, 'comment']
 		],
 
 		doctype: [
