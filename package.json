@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@typescript-eslint/parser": "^2.6.1",
+    "@typescript-eslint/typescript-estree": "^2.6.1",
     "monaco-editor-core": "^0.17.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",

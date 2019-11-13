@@ -66,7 +66,9 @@ export const language = <monaco.languages.IMonarchLanguage>{
 	// The main tokenizer for our languages
 	tokenizer: {
 		root: [
-			[/<([%?][_=-]?)/, 'string', '@ejs'], //(?:(?!php))
+			[/<([%?])/, 'string', '@ejs'],
+			// [/<([%?][_=-]?)/, 'string', '@ejs'],
+			// [/<([%#?])/, 'comment', '@ejsComment'],
 			[/<!DOCTYPE/, 'metatag', '@doctype'],
 			[/<!--/, 'comment', '@comment'],
 			[/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ['delimiter', 'tag', '', 'delimiter']],
@@ -78,7 +80,21 @@ export const language = <monaco.languages.IMonarchLanguage>{
 			[/[^<]+/], // text
 		],
 		
+		// ejsComment: [
+		// 	[/(%?)>/, 'comment', '@pop'],
+		// 	[/./, 'comment.content']
+		// ],
+
 		ejs: [
+			[/[a-zA-Z_]\w*/, {
+                cases: {
+					'@ejsKeywords': { token: 'keyword.ejs' }
+				}
+			}],
+			[/([_-]?[%?])>/, 'string', '@pop'],
+		],
+		
+		ejs2: [
 			[/[a-zA-Z_]\w*/, {
                 cases: {
 					'@ejsKeywords': { token: 'keyword.ejs' }

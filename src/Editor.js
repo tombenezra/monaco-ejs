@@ -1,14 +1,15 @@
 import React from "react";
 import * as monaco from "monaco-editor-core";
-import './ejs/ejs.contribution'
+import { createAST } from "./createAST.ts";
+import "./ejs/ejs.contribution";
 
 const ejsSample = `
-<%= elementsAndContent.title %>
+<%= model.title %>
 <div class="section-hero layout-<%= layout.layoutStyle %> <%= layout.height %>">
 <div class="title-block">
   <%# comment %>
-  <h1><%= elementsAndContent.title %></h1>
-  <h2><%= elementsAndContent.subtitle %></h2>
+  <h1><%= model.title %></h1>
+  <h2><%= model.subtitle %></h2>
 </div>
 <% if(true) { %>
   <div>
@@ -34,14 +35,31 @@ export default class MonacoEditor extends React.PureComponent {
         );
       }
     };
-
-
   }
 
   componentDidMount() {
     const model = monaco.editor.createModel(ejsSample, "ejs");
     monaco.editor.create(document.getElementById("container"), {
       model
+    });
+    const ast = createAST();
+    const props = ast.map(x => x.key.name);
+    const createCompletions = props => props.map(prop => ({
+      label: prop,
+      kind: monaco.languages.CompletionItemKind.Text,
+      insertText: prop
+    }))
+    monaco.languages.registerCompletionItemProvider("ejs", {
+      triggerCharacters: ["."],
+      provideCompletionItems(model, position) {
+        const textUntilPosition = model.getValueInRange({startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: position.column});
+        const match = textUntilPosition.match(/model.$/);
+        const suggestions = match ? createCompletions(props) : [];
+        debugger
+        return {
+          suggestions
+        };
+      }
     });
   }
 
