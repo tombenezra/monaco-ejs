@@ -4,7 +4,9 @@ const EMPTY_ELEMENTS: string[] = ['area', 'base', 'br', 'col', 'embed', 'hr', 'i
 const POSTFIX_SYMBOLS = ['','-','_']
 const PREFIX_SYMBOLS = ['=', ...POSTFIX_SYMBOLS]
 const brackets = PREFIX_SYMBOLS.flatMap(x => POSTFIX_SYMBOLS.map(y => <monaco.languages.CharacterPair>[`<%${x}`, `${y}%>`]))
-
+const reservedJsxTags = ['Search', 'Component']
+const jsxRegex = new RegExp(`(<)(${reservedJsxTags.join('|')})`)
+console.log(jsxRegex)
 export const conf: monaco.languages.LanguageConfiguration = {
 	wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/g,
 
@@ -62,28 +64,49 @@ export const language = <monaco.languages.IMonarchLanguage>{
 	tokenPostfix: '.ejs',
 	ignoreCase: true,
 
-	// The main tokenizer for our languages
+	ejsKeywords: [
+		'if', 'else', 'includes', 'true', 'false'
+	],
+	reservedJsxTags,
+
 	tokenizer: {
 		root: [
 			{ include: 'ejsEmbeddedBegin' },
+			// { include: 'jsx' },
+			{ include: 'html' },
+			[/[^<]+/],
+		],
+
+		jsx: [
+			[jsxRegex, 'keyword.jsx'],
+			[/\/?>/, 'keyword.jsx', '@pop'],
+			[/\s*/]
+		],
+
+		html: [
 			[/<!DOCTYPE/, 'metatag', '@doctype'],
 			[/<!--/, 'comment', '@comment'],
 			[/(<)((?:[\w\-]+:)?[\w\-]+)(\s*)(\/>)/, ['delimiter', 'tag', '', 'delimiter']],
 			[/(<)(script)/, ['delimiter', { token: 'tag', next: '@script' }]],
 			[/(<)(style)/, ['delimiter', { token: 'tag', next: '@style' }]],
-			[/(<)((?:[\w\-]+:)?[\w\-]+)/, ['delimiter', { token: 'tag', next: '@otherTag' }]],
+			[/(<)((?:[\w\-]+:)?[\w\-]+)/, {
+				cases: {
+					// '$S2 == @reservedJsxTags': { token: 'keyword.jsx' },
+					'@default':  {token: 'tag', next: '@otherTag' }
+				}
+			}],
 			[/(<\/)((?:[\w\-]+:)?[\w\-]+)/, ['delimiter', { token: 'tag', next: '@otherTag' }]],
-			[/</, 'delimiter'],
-			[/[^<]+/], // text
+			[/</, 'delimiter']
 		],
 
 		ejsEmbeddedBegin: [
 			[/<(%?[#])/, 'comment', '@ejsComments'],
-			[/<([%?][_=-]?)/, { token: 'metatag', next: '@ejsEmbeddedEnd', nextEmbedded: 'text/javascript' }]
+			[/<([%?][_=-]?)/, { token: 'metatag', next: '@ejsEmbeddedEnd'}]
 		],
 
 		ejsEmbeddedEnd: [
-			[/([_-]?[%?])>/, { token: 'metatag', next: '@pop', nextEmbedded: '@pop' }],
+			[/(\s*model)/, 'keyword.ejs'],
+			[/([_-]?[%?])>/, { token: 'metatag', next: '@pop' }],
 		],
 
 		ejsComments: [

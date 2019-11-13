@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@microsoft/tsdoc": "^0.12.15",
     "@typescript-eslint/parser": "^2.6.1",
     "@typescript-eslint/typescript-estree": "^2.6.1",
     "monaco-editor-core": "^0.17.1",

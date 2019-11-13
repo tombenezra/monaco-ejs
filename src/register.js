@@ -1,17 +1,9 @@
 import * as monaco from 'monaco-editor-core'
 
-interface ILang extends monaco.languages.ILanguageExtensionPoint {
-	loader: () => Promise<ILangImpl>;
-}
+let languageDefinitions = {};
+let languagePromises = {};
 
-interface ILangImpl {
-	conf: monaco.languages.LanguageConfiguration;
-	language: monaco.languages.IMonarchLanguage;
-}
-
-let languageDefinitions: { [languageId: string]: ILang } = {};
-
-function _loadLanguage(languageId: string): Promise<void> {
+function _loadLanguage(languageId) {
 	const loader = languageDefinitions[languageId].loader;
 	return loader().then((mod) => {
 		monaco.languages.setMonarchTokensProvider(languageId, mod.language);
@@ -19,16 +11,15 @@ function _loadLanguage(languageId: string): Promise<void> {
 	});
 }
 
-let languagePromises: { [languageId: string]: Promise<void> } = {};
 
-export function loadLanguage(languageId: string): Promise<void> {
+export function loadLanguage(languageId) {
 	if (!languagePromises[languageId]) {
 		languagePromises[languageId] = _loadLanguage(languageId);
 	}
 	return languagePromises[languageId];
 }
 
-export function registerLanguage(def: ILang): void {
+export function registerLanguage(def) {
 	let languageId = def.id;
 
 	languageDefinitions[languageId] = def;
